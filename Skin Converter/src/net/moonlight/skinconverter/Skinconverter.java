@@ -20,9 +20,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
-public class Skinconverter extends JFrame {
-	private static final long serialVersionUID = 1L;
-	
+public class Skinconverter extends JFrame {	
+	private static final long serialVersionUID = -1049261023522776958L;
+
 	BufferedImage skinLayer1, skinLayer2, convertedImage;
 	
 	private JPanel header = new JPanel();
@@ -143,14 +143,7 @@ public class Skinconverter extends JFrame {
 		);
 		
 		
-		//SETUP FOOTER BUTTONS
-		saveButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				SaveFile();
-				}
-			}
-		);
-		
+		//SETUP CONVERT BUTTON
 		convertButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				
@@ -172,6 +165,15 @@ public class Skinconverter extends JFrame {
 				revalidate();
 				repaint();
 				
+				}
+			}
+		);
+		
+		
+		//SETUP SAVE BUTTON
+		saveButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				SaveFile();
 				}
 			}
 		);
@@ -237,6 +239,98 @@ public class Skinconverter extends JFrame {
 		
 	}
 	
+
+	//COULDN'T LOAD THE FILE
+	public void FailedToLoadFile(boolean local, String dir){
+		JFrame loaderror = new JFrame();
+		loaderror.setTitle("Error: Failed to load skin");
+		loaderror.setLocationRelativeTo(null);
+		loaderror.setSize(400,90);
+		loaderror.setVisible(true);
+		loaderror.setResizable(false);
+		JPanel errorp = new JPanel();
+		JPanel errorfooter = new JPanel();
+		loaderror.add(errorfooter,BorderLayout.SOUTH);
+		loaderror.add(errorp);
+		
+		if(local == true){
+			JLabel error = new JLabel("Error: The selected destination does not exist!");
+			errorp.add(error, BorderLayout.CENTER);
+			JLabel localf = new JLabel(dir);
+			errorfooter.add(localf);
+		}
+		else{
+			JLabel error = new JLabel("Error: The skin failed to load!");
+			errorp.add(error, BorderLayout.CENTER);
+			JLabel usercheck = new JLabel("Make sure the username is spelled correctly: "+dir);
+			errorfooter.add(usercheck);
+		}
+	}
+		
+	
+	//PLACE PEICES OF THE IMAGE WHERE THEY NEED TO GO
+	public void ConvertImage(){
+		
+		//Scale Modifier
+		int origsize = skinLayer1.getWidth()/64;
+
+		//Upper
+		BufferedImage upper = new BufferedImage(64*origsize, 32*origsize, BufferedImage.TYPE_INT_ARGB);
+		upper.getGraphics().drawImage(skinLayer1, 0, 0, 64*origsize, 32*origsize, 0, 0, 64*origsize, 32*origsize, null);
+		
+
+		BufferedImage bi = new BufferedImage(64*origsize, 64*origsize, BufferedImage.TYPE_INT_ARGB);
+		
+		bi.getGraphics().drawImage(upper, 0, 0, 64*origsize, 64*origsize, 0, 0, 64*origsize, 64*origsize, null);
+		
+		//Arm
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[0], 0, 0, 64*origsize, 64*origsize, -32*origsize, -52*origsize, (-32*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[1], 0, 0, 64*origsize, 64*origsize, -44*origsize, -52*origsize, (-44*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[2], 0, 0, 64*origsize, 64*origsize, -36*origsize, -48*origsize, (-36*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[3], 0, 0, 64*origsize, 64*origsize, -40*origsize, -48*origsize, -40*origsize + 64*origsize, -48*origsize + 64*origsize, null);
+		//Leg
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[4], 0, 0, 64*origsize, 64*origsize, -16*origsize, -52*origsize, -16*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[5], 0, 0, 64*origsize, 64*origsize, -28*origsize, -52*origsize, -28*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[6], 0, 0, 64*origsize, 64*origsize, -20*origsize, -48*origsize, -20*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
+		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[7], 0, 0, 64*origsize, 64*origsize, -24*origsize, -48*origsize, -24*origsize + 64*origsize, -48*origsize + 64*origsize, null);
+		
+		
+		//LAYER 2
+		if(skinLayer2 != null){
+			
+			//Body
+			BufferedImage body = new BufferedImage(24*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
+			body.getGraphics().drawImage(skinLayer2, 0, 0, 24*origsize, 16*origsize, 16*origsize, 16*origsize, 40*origsize, 32*origsize, null);
+			
+			//Arm
+			BufferedImage arm = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
+			arm.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 40*origsize, 16*origsize, 56*origsize, 32*origsize, null);
+			
+			//Leg
+			BufferedImage leg = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
+			leg.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 0*origsize, 16*origsize, 16*origsize, 32*origsize, null);
+			
+			bi.getGraphics().drawImage(body, 0, 0, 64*origsize, 64*origsize, -16*origsize, -32*origsize, (-16*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(arm, 0, 0, 64*origsize, 64*origsize, -40*origsize, -32*origsize, (-40*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(leg, 0, 0, 64*origsize, 64*origsize, 0*origsize, -32*origsize, (0*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
+			
+			//Arm
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[0], 0, 0, 64*origsize, 64*origsize, -48*origsize, -52*origsize, (-48*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[1], 0, 0, 64*origsize, 64*origsize, -60*origsize, -52*origsize, (-60*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[2], 0, 0, 64*origsize, 64*origsize, -52*origsize, -48*origsize, (-52*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[3], 0, 0, 64*origsize, 64*origsize, -56*origsize, -48*origsize, -56*origsize + 64*origsize, -48*origsize + 64*origsize, null);
+			
+			//Leg
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[4], 0, 0, 64*origsize, 64*origsize, -0*origsize, -52*origsize, -0*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[5], 0, 0, 64*origsize, 64*origsize, -12*origsize, -52*origsize, -12*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[6], 0, 0, 64*origsize, 64*origsize, -4*origsize, -48*origsize, -4*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[7], 0, 0, 64*origsize, 64*origsize, -8*origsize, -48*origsize, -8*origsize + 64*origsize, -48*origsize + 64*origsize, null);
+		
+		}
+		
+		convertedImage = bi;	
+		
+	}
 	
 	//CUT THE IMAGE UP FOR REARANGEMENT
 	public BufferedImage[] CalcSkin (BufferedImage skinIn){
@@ -306,71 +400,6 @@ public class Skinconverter extends JFrame {
 		returnimages[7] = legBo;
 		
 		return returnimages;
-		
-	}
-		
-	
-	//PLACE PEICES OF THE IMAGE WHERE THEY NEED TO GO
-	public void ConvertImage(){
-		
-		//Scale Modifier
-		int origsize = skinLayer1.getWidth()/64;
-
-		//Upper
-		BufferedImage upper = new BufferedImage(64*origsize, 32*origsize, BufferedImage.TYPE_INT_ARGB);
-		upper.getGraphics().drawImage(skinLayer1, 0, 0, 64*origsize, 32*origsize, 0, 0, 64*origsize, 32*origsize, null);
-		
-
-		BufferedImage bi = new BufferedImage(64*origsize, 64*origsize, BufferedImage.TYPE_INT_ARGB);
-		
-		bi.getGraphics().drawImage(upper, 0, 0, 64*origsize, 64*origsize, 0, 0, 64*origsize, 64*origsize, null);
-		
-		//Arm
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[0], 0, 0, 64*origsize, 64*origsize, -32*origsize, -52*origsize, (-32*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[1], 0, 0, 64*origsize, 64*origsize, -44*origsize, -52*origsize, (-44*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[2], 0, 0, 64*origsize, 64*origsize, -36*origsize, -48*origsize, (-36*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[3], 0, 0, 64*origsize, 64*origsize, -40*origsize, -48*origsize, -40*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-		//Leg
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[4], 0, 0, 64*origsize, 64*origsize, -16*origsize, -52*origsize, -16*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[5], 0, 0, 64*origsize, 64*origsize, -28*origsize, -52*origsize, -28*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[6], 0, 0, 64*origsize, 64*origsize, -20*origsize, -48*origsize, -20*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[7], 0, 0, 64*origsize, 64*origsize, -24*origsize, -48*origsize, -24*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-		
-		
-		//LAYER 2
-		if(skinLayer2 != null){
-			
-			//Body
-			BufferedImage body = new BufferedImage(24*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
-			body.getGraphics().drawImage(skinLayer2, 0, 0, 24*origsize, 16*origsize, 16*origsize, 16*origsize, 40*origsize, 32*origsize, null);
-			
-			//Arm
-			BufferedImage arm = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
-			arm.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 40*origsize, 16*origsize, 56*origsize, 32*origsize, null);
-			
-			//Leg
-			BufferedImage leg = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
-			leg.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 0*origsize, 16*origsize, 16*origsize, 32*origsize, null);
-			
-			bi.getGraphics().drawImage(body, 0, 0, 64*origsize, 64*origsize, -16*origsize, -32*origsize, (-16*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(arm, 0, 0, 64*origsize, 64*origsize, -40*origsize, -32*origsize, (-40*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(leg, 0, 0, 64*origsize, 64*origsize, 0*origsize, -32*origsize, (0*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
-			
-			//Arm
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[0], 0, 0, 64*origsize, 64*origsize, -48*origsize, -52*origsize, (-48*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[1], 0, 0, 64*origsize, 64*origsize, -60*origsize, -52*origsize, (-60*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[2], 0, 0, 64*origsize, 64*origsize, -52*origsize, -48*origsize, (-52*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[3], 0, 0, 64*origsize, 64*origsize, -56*origsize, -48*origsize, -56*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-			
-			//Leg
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[4], 0, 0, 64*origsize, 64*origsize, -0*origsize, -52*origsize, -0*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[5], 0, 0, 64*origsize, 64*origsize, -12*origsize, -52*origsize, -12*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[6], 0, 0, 64*origsize, 64*origsize, -4*origsize, -48*origsize, -4*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[7], 0, 0, 64*origsize, 64*origsize, -8*origsize, -48*origsize, -8*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-		
-		}
-		
-		convertedImage = bi;	
 		
 	}
 	
@@ -447,33 +476,6 @@ public class Skinconverter extends JFrame {
 		
 	}
 	
-
-	//COULDN'T LOAD THE FILE
-	public void FailedToLoadFile(boolean local, String dir){
-		JFrame loaderror = new JFrame();
-		loaderror.setTitle("Error: Failed to load skin");
-		loaderror.setLocationRelativeTo(null);
-		loaderror.setSize(400,90);
-		loaderror.setVisible(true);
-		loaderror.setResizable(false);
-		JPanel errorp = new JPanel();
-		JPanel errorfooter = new JPanel();
-		loaderror.add(errorfooter,BorderLayout.SOUTH);
-		loaderror.add(errorp);
-		
-		if(local == true){
-			JLabel error = new JLabel("Error: The selected destination does not exist!");
-			errorp.add(error, BorderLayout.CENTER);
-			JLabel localf = new JLabel(dir);
-			errorfooter.add(localf);
-		}
-		else{
-			JLabel error = new JLabel("Error: The skin failed to load!");
-			errorp.add(error, BorderLayout.CENTER);
-			JLabel usercheck = new JLabel("Make sure the username is spelled correctly: "+dir);
-			errorfooter.add(usercheck);
-		}
-	}
 		
 	//FILE SAVED
 	public void FileSaved(){
