@@ -1,5 +1,8 @@
 package net.moonlight.skinconverter;
 import java.awt.BorderLayout;
+import java.awt.FileDialog;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
@@ -10,15 +13,22 @@ import java.io.IOException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
+
+
 
 public class Skinconverter extends JFrame {	
 	private static final long serialVersionUID = -1049261023522776958L;
@@ -39,6 +49,8 @@ public class Skinconverter extends JFrame {
 	private JButton browseLayer2Button = new JButton("Browse");
 	private JButton loadlayer2Button = new JButton("Load skin");
 	
+	private JLabel scaleLabel = new JLabel("Scale Multiplier: ");
+	private JComboBox<String> cboxTexScale = new JComboBox<String>();	
 	
 	private JButton saveButton = new JButton("      Save      ");
 	private JButton convertButton = new JButton("ConvertImage skin");
@@ -69,12 +81,16 @@ public class Skinconverter extends JFrame {
 						)
 				.addGroup(layout.createSequentialGroup().addComponent(layer2Label).addComponent(loadSecondaryDirectory).addComponent(browseLayer2Button).addComponent(loadlayer2Button)
 						)
+				.addGroup(layout.createSequentialGroup().addComponent(scaleLabel).addComponent(cboxTexScale)
+						)
 				);
 		layout.setVerticalGroup(
 				layout.createSequentialGroup().addGroup(
 						layout.createParallelGroup().addComponent(layer1Label).addComponent(loadPrimaryDirectory).addComponent(browseButton).addComponent(loadButton)
 				).addGroup(
 						layout.createParallelGroup().addComponent(layer2Label).addComponent(loadSecondaryDirectory).addComponent(browseLayer2Button).addComponent(loadlayer2Button)
+						)
+				.addGroup(layout.createParallelGroup().addComponent(scaleLabel).addComponent(cboxTexScale)
 						)
 				);
 		
@@ -90,6 +106,38 @@ public class Skinconverter extends JFrame {
 		//SETUP LAYER 1 BUTTONS
 		browseButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
+				
+				final Display display = new Display ();
+				final Shell shell = new Shell (display);
+				
+				final org.eclipse.swt.widgets.FileDialog dialog = new org.eclipse.swt.widgets.FileDialog(shell, SWT.OPEN);
+				
+				//String [] filterNames = new String [] {"All Files (*)"};
+		        String [] filterExtensions = new String [] {"*.png"};
+		        //String filterPath = "c:\\";
+		        //dialog.setFilterNames (filterNames);
+		        dialog.setFilterExtensions (filterExtensions);
+		        //dialog.setFilterPath (filterPath);
+		        dialog.open();
+		        
+		        File selectedFile;
+		        
+		        if(dialog.getFilterPath() != null && dialog.getFilterPath().trim().length() > 0){
+		        	selectedFile = new File(dialog.getFilterPath(), dialog.getFileName());
+		        	loadPrimaryDirectory.setText(selectedFile.getAbsolutePath());
+				}
+		        
+				revalidate();
+				repaint();
+				
+				shell.close();
+				while (!shell.isDisposed ()) {
+				    if (!display.readAndDispatch ()) display.sleep ();
+				}
+				display.dispose ();
+			}
+				
+				/*
 				final JFileChooser fc = new JFileChooser();
 				int response = fc.showOpenDialog(null);
 				if(response == JFileChooser.APPROVE_OPTION){
@@ -98,6 +146,8 @@ public class Skinconverter extends JFrame {
 					repaint();
 					}
 				}
+				
+				*/
 			}
 		);
 		
@@ -118,13 +168,42 @@ public class Skinconverter extends JFrame {
 		//SETUP LAYER 2 BUTTONS
 		browseLayer2Button.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				final JFileChooser fc = new JFileChooser();
-				int response = fc.showOpenDialog(null);
-				if(response == JFileChooser.APPROVE_OPTION){
-					loadSecondaryDirectory.setText(fc.getSelectedFile().toString());
-					revalidate();
-					repaint();
-					}
+				final Display display = new Display ();
+				final Shell shell = new Shell (display);
+				
+				final org.eclipse.swt.widgets.FileDialog dialog = new org.eclipse.swt.widgets.FileDialog(shell, SWT.OPEN);
+				
+				//String [] filterNames = new String [] {"All Files (*)"};
+		        String [] filterExtensions = new String [] {"*.png"};
+		        String filterPath = "c:\\";
+		        //dialog.setFilterNames (filterNames);
+		        dialog.setFilterExtensions (filterExtensions);
+		        dialog.setFilterPath (filterPath);
+		        dialog.open();
+		        
+		        File selectedFile;
+		        
+		        if(dialog.getFilterPath() != null && dialog.getFilterPath().trim().length() > 0){
+		        	selectedFile = new File(dialog.getFilterPath(), dialog.getFileName());
+		        	loadSecondaryDirectory.setText(selectedFile.getAbsolutePath());
+				}
+		        
+				revalidate();
+				repaint();
+				
+				shell.close();
+				while (!shell.isDisposed ()) {
+				    if (!display.readAndDispatch ()) display.sleep ();
+				}
+				display.dispose ();
+				
+				//final JFileChooser fc = new JFileChooser();
+				//int response = fc.showOpenDialog(null);
+				//if(response == JFileChooser.APPROVE_OPTION){
+				//	loadSecondaryDirectory.setText(fc.getSelectedFile().toString());
+				//	revalidate();
+				//	repaint();
+				//	}
 				}
 			}
 		);
@@ -142,12 +221,31 @@ public class Skinconverter extends JFrame {
 			}
 		);
 		
+		cboxTexScale.setMaximumRowCount(16);
+		cboxTexScale.setModel(new DefaultComboBoxModel<String>(new String[] {"1x", "2x", "4x", "8x", "16x", "32x", "64x", "128x", "256x", "512x"}));
+		cboxTexScale.setMaximumSize(cboxTexScale.getPreferredSize());
+		
 		
 		//SETUP CONVERT BUTTON
 		convertButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				
-				ConvertImage();
+				if(skinLayer1 != null){
+					if(skinLayer1.getHeight() == skinLayer1.getWidth()/2){
+						ConvertImage(true);
+					}
+					else{
+						if(skinLayer1.getHeight() == skinLayer1.getWidth()){
+							if(skinLayer2 != null){
+								ConvertImage(true);
+							}
+							else{
+								ConvertImage(false);
+							}
+						}
+					}
+				}
+				
 				
 				//Resize for Preview
 				BufferedImage bi = new BufferedImage(preview.getHeight(), preview.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -269,66 +367,86 @@ public class Skinconverter extends JFrame {
 		
 	
 	//PLACE PEICES OF THE IMAGE WHERE THEY NEED TO GO
-	public void ConvertImage(){
+	public void ConvertImage(boolean doconvert){
 		
 		//Scale Modifier
 		int origsize = skinLayer1.getWidth()/64;
-
-		//Upper
-		BufferedImage upper = new BufferedImage(64*origsize, 32*origsize, BufferedImage.TYPE_INT_ARGB);
-		upper.getGraphics().drawImage(skinLayer1, 0, 0, 64*origsize, 32*origsize, 0, 0, 64*origsize, 32*origsize, null);
 		
-
 		BufferedImage bi = new BufferedImage(64*origsize, 64*origsize, BufferedImage.TYPE_INT_ARGB);
-		
-		bi.getGraphics().drawImage(upper, 0, 0, 64*origsize, 64*origsize, 0, 0, 64*origsize, 64*origsize, null);
-		
-		//Arm
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[0], 0, 0, 64*origsize, 64*origsize, -32*origsize, -52*origsize, (-32*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[1], 0, 0, 64*origsize, 64*origsize, -44*origsize, -52*origsize, (-44*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[2], 0, 0, 64*origsize, 64*origsize, -36*origsize, -48*origsize, (-36*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[3], 0, 0, 64*origsize, 64*origsize, -40*origsize, -48*origsize, -40*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-		//Leg
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[4], 0, 0, 64*origsize, 64*origsize, -16*origsize, -52*origsize, -16*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[5], 0, 0, 64*origsize, 64*origsize, -28*origsize, -52*origsize, -28*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[6], 0, 0, 64*origsize, 64*origsize, -20*origsize, -48*origsize, -20*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
-		bi.getGraphics().drawImage(CalcSkin(skinLayer1)[7], 0, 0, 64*origsize, 64*origsize, -24*origsize, -48*origsize, -24*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-		
-		
-		//LAYER 2
-		if(skinLayer2 != null){
+
+		if(doconvert){
+			//Upper
+			BufferedImage upper = new BufferedImage(64*origsize, 32*origsize, BufferedImage.TYPE_INT_ARGB);
+			upper.getGraphics().drawImage(skinLayer1, 0, 0, 64*origsize, 32*origsize, 0, 0, 64*origsize, 32*origsize, null);
 			
-			//Body
-			BufferedImage body = new BufferedImage(24*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
-			body.getGraphics().drawImage(skinLayer2, 0, 0, 24*origsize, 16*origsize, 16*origsize, 16*origsize, 40*origsize, 32*origsize, null);
+			bi.getGraphics().drawImage(upper, 0, 0, 64*origsize, 64*origsize, 0, 0, 64*origsize, 64*origsize, null);
 			
 			//Arm
-			BufferedImage arm = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
-			arm.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 40*origsize, 16*origsize, 56*origsize, 32*origsize, null);
-			
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[0], 0, 0, 64*origsize, 64*origsize, -32*origsize, -52*origsize, (-32*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[1], 0, 0, 64*origsize, 64*origsize, -44*origsize, -52*origsize, (-44*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[2], 0, 0, 64*origsize, 64*origsize, -36*origsize, -48*origsize, (-36*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[3], 0, 0, 64*origsize, 64*origsize, -40*origsize, -48*origsize, -40*origsize + 64*origsize, -48*origsize + 64*origsize, null);
 			//Leg
-			BufferedImage leg = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
-			leg.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 0*origsize, 16*origsize, 16*origsize, 32*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[4], 0, 0, 64*origsize, 64*origsize, -16*origsize, -52*origsize, -16*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[5], 0, 0, 64*origsize, 64*origsize, -28*origsize, -52*origsize, -28*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[6], 0, 0, 64*origsize, 64*origsize, -20*origsize, -48*origsize, -20*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
+			bi.getGraphics().drawImage(CalcSkin(skinLayer1)[7], 0, 0, 64*origsize, 64*origsize, -24*origsize, -48*origsize, -24*origsize + 64*origsize, -48*origsize + 64*origsize, null);
 			
-			bi.getGraphics().drawImage(body, 0, 0, 64*origsize, 64*origsize, -16*origsize, -32*origsize, (-16*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(arm, 0, 0, 64*origsize, 64*origsize, -40*origsize, -32*origsize, (-40*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(leg, 0, 0, 64*origsize, 64*origsize, 0*origsize, -32*origsize, (0*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
 			
-			//Arm
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[0], 0, 0, 64*origsize, 64*origsize, -48*origsize, -52*origsize, (-48*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[1], 0, 0, 64*origsize, 64*origsize, -60*origsize, -52*origsize, (-60*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[2], 0, 0, 64*origsize, 64*origsize, -52*origsize, -48*origsize, (-52*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[3], 0, 0, 64*origsize, 64*origsize, -56*origsize, -48*origsize, -56*origsize + 64*origsize, -48*origsize + 64*origsize, null);
+			//LAYER 2
+			if(skinLayer2 != null){
+				
+				//Body
+				BufferedImage body = new BufferedImage(24*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
+				body.getGraphics().drawImage(skinLayer2, 0, 0, 24*origsize, 16*origsize, 16*origsize, 16*origsize, 40*origsize, 32*origsize, null);
+				
+				//Arm
+				BufferedImage arm = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
+				arm.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 40*origsize, 16*origsize, 56*origsize, 32*origsize, null);
+				
+				//Leg
+				BufferedImage leg = new BufferedImage(16*origsize, 16*origsize, BufferedImage.TYPE_INT_ARGB);
+				leg.getGraphics().drawImage(skinLayer2, 0, 0, 16*origsize, 16*origsize, 0*origsize, 16*origsize, 16*origsize, 32*origsize, null);
+				
+				bi.getGraphics().drawImage(body, 0, 0, 64*origsize, 64*origsize, -16*origsize, -32*origsize, (-16*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
+				bi.getGraphics().drawImage(arm, 0, 0, 64*origsize, 64*origsize, -40*origsize, -32*origsize, (-40*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
+				bi.getGraphics().drawImage(leg, 0, 0, 64*origsize, 64*origsize, 0*origsize, -32*origsize, (0*origsize) + (64*origsize), (-32*origsize) + (64*origsize), null);
+				
+				//Arm
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[0], 0, 0, 64*origsize, 64*origsize, -48*origsize, -52*origsize, (-48*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[1], 0, 0, 64*origsize, 64*origsize, -60*origsize, -52*origsize, (-60*origsize) + (64*origsize), (-52*origsize) + (64*origsize), null);
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[2], 0, 0, 64*origsize, 64*origsize, -52*origsize, -48*origsize, (-52*origsize) + (64*origsize), (-48*origsize) + (64*origsize), null);
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[3], 0, 0, 64*origsize, 64*origsize, -56*origsize, -48*origsize, -56*origsize + 64*origsize, -48*origsize + 64*origsize, null);
+				
+				//Leg
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[4], 0, 0, 64*origsize, 64*origsize, -0*origsize, -52*origsize, -0*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[5], 0, 0, 64*origsize, 64*origsize, -12*origsize, -52*origsize, -12*origsize + 64*origsize, -52*origsize + 64*origsize, null);
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[6], 0, 0, 64*origsize, 64*origsize, -4*origsize, -48*origsize, -4*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
+				bi.getGraphics().drawImage(CalcSkin(skinLayer2)[7], 0, 0, 64*origsize, 64*origsize, -8*origsize, -48*origsize, -8*origsize + 64*origsize, -48*origsize + 64*origsize, null);
 			
-			//Leg
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[4], 0, 0, 64*origsize, 64*origsize, -0*origsize, -52*origsize, -0*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[5], 0, 0, 64*origsize, 64*origsize, -12*origsize, -52*origsize, -12*origsize + 64*origsize, -52*origsize + 64*origsize, null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[6], 0, 0, 64*origsize, 64*origsize, -4*origsize, -48*origsize, -4*origsize + 64*origsize, -48*origsize+ 64*origsize, null);
-			bi.getGraphics().drawImage(CalcSkin(skinLayer2)[7], 0, 0, 64*origsize, 64*origsize, -8*origsize, -48*origsize, -8*origsize + 64*origsize, -48*origsize + 64*origsize, null);
-		
+			}
+		}
+		else{
+			bi = skinLayer1;
 		}
 		
-		convertedImage = bi;	
+		if(cboxTexScale.getSelectedItem().toString() != "1x"){
+			
+			BufferedImage newImage = new BufferedImage(origsize*64*Integer.parseInt(cboxTexScale.getSelectedItem().toString().replace("x","")), origsize*64*Integer.parseInt(cboxTexScale.getSelectedItem().toString().replace("x","")), BufferedImage.TYPE_INT_ARGB);
+			
+			Graphics2D g = (Graphics2D) newImage.getGraphics();
+			g.drawImage(bi, 0, 0, origsize*64*Integer.parseInt(cboxTexScale.getSelectedItem().toString().replace("x","")), origsize*64*Integer.parseInt(cboxTexScale.getSelectedItem().toString().replace("x","")), null);
+			g.dispose();
+			
+			System.out.println("Scaling by: " + Integer.parseInt(cboxTexScale.getSelectedItem().toString().replace("x","")) + "   Size is: " + newImage.getHeight());
+			
+			convertedImage = newImage;
+		}
+		else{
+			convertedImage = bi;
+		}
+		
+		
 		
 	}
 	
@@ -408,17 +526,53 @@ public class Skinconverter extends JFrame {
 	private String tempsaveloc = null;
 	public void SaveFile(){
 		
+		final Display display = new Display ();
+		final Shell shell = new Shell (display);
+		
+		final org.eclipse.swt.widgets.FileDialog dialog = new org.eclipse.swt.widgets.FileDialog(shell, SWT.SAVE);
+		
+        String [] filterExtensions = new String [] {"*.png"};
+        //String filterPath = "c:\\";
+        dialog.setFilterExtensions (filterExtensions);
+        //dialog.setFilterPath (filterPath);
+        
+        dialog.setOverwrite(true);
+        dialog.open();
+        
+        
+        File selectedFile = null;
+        
+        if(dialog.getFilterPath() != null && dialog.getFilterPath().trim().length() > 0){
+        	selectedFile = new File(dialog.getFilterPath(), dialog.getFileName());
+		}
+        
+		revalidate();
+		repaint();
+		
+		shell.close();
+		while (!shell.isDisposed ()) {
+		    if (!display.readAndDispatch ()) display.sleep ();
+		}
+		display.dispose ();
+		
 		//Open File Dialog
-		final JFileChooser fc = new JFileChooser();
+		/*final JFileChooser fc = new JFileChooser();
 		int response = fc.showSaveDialog(null);
 		if(response == JFileChooser.APPROVE_OPTION){
 			if(!fc.getSelectedFile().toString().substring(fc.getSelectedFile().toString().length()-4).contentEquals(".png") || fc.getSelectedFile().toString().length() < 4)
 				tempsaveloc = fc.getSelectedFile().toString() + ".png";
 			else
 				tempsaveloc = fc.getSelectedFile().toString();
-		}	
+		}	*/
+		
+		if(selectedFile == null)return;
+		
+		tempsaveloc = selectedFile.getAbsolutePath();
 		
 		//Does the file already exist?
+		
+		/*
+		
 		try{
 			ImageIO.read(new File(tempsaveloc));
 
@@ -466,13 +620,15 @@ public class Skinconverter extends JFrame {
 			
 		}
 		
+		*/
+		
 		//File Doesn't Exist. Save
-		catch(IOException e){
+		//catch(IOException e){
 			try {
 				ImageIO.write(convertedImage, "png", new File(tempsaveloc));
 				FileSaved();
 			} catch (IOException e2) {}
-		}
+		//}
 		
 	}
 	
