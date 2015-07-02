@@ -1,5 +1,7 @@
 package net.moonlight.skinconverter;
+import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -8,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -17,6 +20,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -52,6 +56,8 @@ public class Skinconverter extends JFrame {
 	private JLabel scaleLabel = new JLabel("Scale Multiplier: ");
 	private JComboBox<String> cboxTexScale = new JComboBox<String>();	
 	
+	private JCheckBox flipheadbottom = new JCheckBox("Flip Bottom Of Head? (1.7 format to 1.8 format)");	
+	
 	private JButton saveButton = new JButton("      Save      ");
 	private JButton convertButton = new JButton("ConvertImage skin");
 	
@@ -59,7 +65,7 @@ public class Skinconverter extends JFrame {
 
 		//SETUP WINDOW
 		setTitle("Simple Skin Converter by Moonlight");
-		setSize(650, 500);
+		setSize(650, 650);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -81,7 +87,7 @@ public class Skinconverter extends JFrame {
 						)
 				.addGroup(layout.createSequentialGroup().addComponent(layer2Label).addComponent(loadSecondaryDirectory).addComponent(browseLayer2Button).addComponent(loadlayer2Button)
 						)
-				.addGroup(layout.createSequentialGroup().addComponent(scaleLabel).addComponent(cboxTexScale)
+				.addGroup(layout.createSequentialGroup().addComponent(scaleLabel).addComponent(cboxTexScale).addComponent(flipheadbottom)
 						)
 				);
 		layout.setVerticalGroup(
@@ -90,7 +96,7 @@ public class Skinconverter extends JFrame {
 				).addGroup(
 						layout.createParallelGroup().addComponent(layer2Label).addComponent(loadSecondaryDirectory).addComponent(browseLayer2Button).addComponent(loadlayer2Button)
 						)
-				.addGroup(layout.createParallelGroup().addComponent(scaleLabel).addComponent(cboxTexScale)
+				.addGroup(layout.createParallelGroup().addComponent(scaleLabel).addComponent(cboxTexScale).addComponent(flipheadbottom)
 						)
 				);
 		
@@ -373,6 +379,26 @@ public class Skinconverter extends JFrame {
 		int origsize = skinLayer1.getWidth()/64;
 		
 		BufferedImage bi = new BufferedImage(64*origsize, 64*origsize, BufferedImage.TYPE_INT_ARGB);
+		
+		if(flipheadbottom.isSelected()){
+			//BufferedImage newimg = new BufferedImage(skinLayer1.getWidth(), skinLayer1.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			
+			BufferedImage bottomhead = new BufferedImage(8*origsize, 8*origsize, BufferedImage.TYPE_INT_ARGB);
+			bottomhead.getGraphics().drawImage(skinLayer1, 0, 0, 8*origsize, 8*origsize, 16*origsize, 8*origsize, 24*origsize, 0, null);
+			
+			//newimg.getGraphics().drawImage(skinLayer1, 0, 0, null);
+			
+			((Graphics2D) skinLayer1.getGraphics()).setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f)); 
+			//newimg.getGraphics().setColor(new Color(0, 0, 0, 0));
+			skinLayer1.getGraphics().fillRect(16*origsize, 0, 8*origsize, 8*origsize); 
+			((Graphics2D) skinLayer1.getGraphics()).setComposite(AlphaComposite.SrcOver);
+			
+			skinLayer1.getGraphics().drawImage(bottomhead, 16*origsize, 0, null);
+			
+			//skinLayer1 = newimg;
+			
+			
+		}
 
 		if(doconvert){
 			//Upper
